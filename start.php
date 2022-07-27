@@ -1,6 +1,6 @@
 <?php
 
-define('DB_HOST', '127.0.0.1');
+define('DB_HOST', 'localhost');
 define('DB_NAME', 'lvsoft_bukovel');
 define('DB_USER', 'root');
 define('DB_PASS', '');
@@ -220,10 +220,11 @@ class Bukovel {
 			$dt = date("Y-m-d");
 			$ip = $_SERVER['REMOTE_ADDR'];
 			$ref = isset($_SERVER['HTTP_REFERER']) ? $this->db->real_escape_string($_SERVER['HTTP_REFERER']) : '';
-			$this->db->query("INSERT INTO `stats_ip` (`date`, `ip`, `referer`) VALUES ('".$dt."',INET_ATON('".$ip."'),'".$ref."') ON DUPLICATE KEY UPDATE cnt = cnt + 1");
-			$rrr = $this->db->query("SELECT sum(cnt) hits, count(ip) hosts  FROM `stats_ip` WHERE date = '".$dt."'");
-			$data = $rrr->fetch_array(MYSQLI_ASSOC);
+			$this->db->query("INSERT INTO `stats_ip` (`date`, `ip`, `referer`) VALUES ('".$dt."',INET_ATON('".$ip."'),'".$ref."') ON DUPLICATE KEY UPDATE cnt = cnt + 1") or die($this->db->error);
+			$drow = $this->db->query("SELECT sum(cnt) hits, count(ip) hosts  FROM `stats_ip` WHERE date = '".$dt."'") or die($this->db->error);
+			$data = $drow->fetch_array(MYSQLI_ASSOC);
 			$this->db_close();
+		}else{
 		}
 		return $data;
 	}
@@ -231,10 +232,11 @@ class Bukovel {
 	function db_init(){
 		if($this->db_connect()) $this->db->query("
 			CREATE TABLE IF NOT EXISTS `stats_ip` (
-				`date` date NOT NULL,
-				`ip` int UNSIGNED NOT NULL DEFAULT '0',
-  				`cnt` int UNSIGNED NOT NULL DEFAULT '1'
-			) ENGINE=MyISAM
+				`date` DATE NOT NULL,
+				`ip` INT UNSIGNED NOT NULL DEFAULT '0',
+				`cnt` INT UNSIGNED NOT NULL DEFAULT '1',
+				 `referer` VARCHAR(300) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL
+			) ENGINE=MyISAM;
 		");
 		$this->db_close();
 	}
