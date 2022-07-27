@@ -2,7 +2,7 @@
 
 define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'lvsoft_bukovel');
-define('DB_USER', '');
+define('DB_USER', 'root');
 define('DB_PASS', '');
 
 class Bukovel {
@@ -204,23 +204,6 @@ class Bukovel {
 		return $this->status = unserialize(file_get_contents($this->dir.'status.dat'));
 	}
 
-	function draw_cam_list(){
-		$cam_list = '';
-		foreach($this->cams as $k=>$v){
-			$rnd = rand(10000,99999);
-			$url = $this->get_cam_path($k);
-			$url = file_exists($this->dir.$url) ? '/'.$url : '/s/empty.gif';
-	    	$cam_list .= '<div class="cam '.$this->status['lift'][ $v['origin'] ].'">
-				<a class="fancy" data-fancybox="gallery" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
-					<img title="Черга на нижній станції витягу №'.intval($k).'" alt="Черга на нижній станції витягу №'.$v['origin'].'" src="'.$url.'?'.$rnd.'">
-					</a><i>'.intval($k).'</i>'.
-#					($this->status['lift_change'][ $v['origin'] ] ? '<span>'.$this->status['lift_change'][ $v['origin'] ].'</span>' : '').
-			'</div>';
-		}
-
-		return $cam_list;
-	}
-
 	function db_connect(){
 		$db_user = isset($_SERVER['MYSQL_USER']) ? $_SERVER['MYSQL_USER'] : DB_USER;
 		$db_pass = isset($_SERVER['MYSQL_PASS']) ? $_SERVER['MYSQL_PASS'] : DB_PASS;
@@ -251,18 +234,33 @@ class Bukovel {
 				`date` date NOT NULL,
 				`ip` int UNSIGNED NOT NULL DEFAULT '0',
   				`cnt` int UNSIGNED NOT NULL DEFAULT '1'
-			) ENGINE=MyISAM"
-		);
+			) ENGINE=MyISAM
+		");
 		$this->db_close();
 	}
 
 	function deploy($argv){
 		$cont = file_get_contents(__FILE__);
-		$cont = preg_replace("/define\('DB_USER', ''\);/is", "define('DB_USER', '".array_shift($argv)."');", $cont);
+		$cont = preg_replace("/define\('DB_USER', 'root'\);/is", "define('DB_USER', '".array_shift($argv)."');", $cont);
 		$cont = preg_replace("/define\('DB_PASS', ''\);/is", "define('DB_PASS', '".array_shift($argv)."');", $cont);
-		#$cont = preg_replace("define('DB_PASS', '5678');", "define('DB_PASS', '".array_shift($argv)."');", $cont);
 		file_put_contents(__FILE__,$cont) or print_r(error_get_last());
-		//echo substr($cont,0,300);
+	}
+
+	function draw_cam_list(){
+		$cam_list = '';
+		foreach($this->cams as $k=>$v){
+			$rnd = rand(10000,99999);
+			$url = $this->get_cam_path($k);
+			$url = file_exists($this->dir.$url) ? '/'.$url : '/s/empty.gif';
+			$cam_list .= '<div class="cam '.$this->status['lift'][ $v['origin'] ].'">
+				<a class="fancy" data-fancybox="gallery" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
+					<img title="Черга на нижній станції витягу №'.intval($k).'" alt="Черга на нижній станції витягу №'.$v['origin'].'" src="'.$url.'?'.$rnd.'">
+					</a><i>'.intval($k).'</i>'.
+#					($this->status['lift_change'][ $v['origin'] ] ? '<span>'.$this->status['lift_change'][ $v['origin'] ].'</span>' : '').
+			'</div>';
+		}
+
+		return $cam_list;
 	}
 
 	function draw_page(){
@@ -366,3 +364,5 @@ $(document).ready(function() {
 }
 
 new Bukovel();
+
+?>
