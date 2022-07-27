@@ -1,0 +1,6 @@
+.DS_Store
+g*.html
+.svn/*
+status.dat
+s/*.jpg
+s/*.psd

@@ -1,0 +1,30 @@
+name: Deploy 2 Svai
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+
+  deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+
+      - name: 🔑 Updating db keys
+        run : php start.php deploy ${{ secrets.BUKOVEL_DB_USER }} ${{ secrets.BUKOVEL_DB_PASS }}
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: bukovel.lv.com.ua
+          username: ${{ secrets.BUKOVEL_FTP_USER }}
+          password: ${{ secrets.BUKOVEL_FTP_PASS }}
+          server-dir: /
+          exclude: |
+            README.md
+            **/.git*
+            **/.git*/**
