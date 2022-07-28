@@ -27,38 +27,28 @@ class Bukovel {
 	);
 
 	function __construct(){
-
 		$this->dir = dirname(__FILE__).'/';
-
+		# running form command line
+		global $argv;
+		if(!isset($_SERVER['SERVER_NAME'])){
+			array_shift($argv);
+			$cli_mode = array_shift($argv);
+		}
 		if(isset($_SERVER['SERVER_NAME']) && isset($_REQUEST['mode']) && ($_REQUEST['mode'] == 'touch')){
 			$this->draw_touch();
 		}elseif(isset($_SERVER['SERVER_NAME'])){
 			$this->draw_page();
+		}elseif($cli_mode == 'init'){
+			$this->db_init();
+		}elseif($cli_mode == 'deploy'){
+			$this->deploy($argv);
 		}else{
-			# running form command line
-			global $argv;
-			array_shift($argv);
-			switch (array_shift($argv)) {
-				case 'init':
-					$this->db_init();
-				break;
-				case 'deploy':
-					$this->deploy($argv);
-				break;
-				default:
-					$this->cron_update();
-			}
-
+			$this->cron_update();
 		}
-	}
-
-	function get_cam_path($k){
-		return 's/'.$k.'.jpg';
 	}
 
 	function cron_update(){
 		$data = $this->get_lift_status();
-
 		$ua = array (
 			'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 YaBrowser/17.10.0.2017 Yowser/2.5 Safari/537.36',
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063',
@@ -73,8 +63,8 @@ class Bukovel {
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	#	curl_setopt($ch, CURLOPT_COOKIEJAR, $this->dir.'cookie.dat');
-	#	curl_setopt($ch, CURLOPT_COOKIEFILE, $this->dir.'cookie.dat');
+#		curl_setopt($ch, CURLOPT_COOKIEJAR, $this->dir.'cookie.dat');
+#		curl_setopt($ch, CURLOPT_COOKIEFILE, $this->dir.'cookie.dat');
 		curl_setopt($ch, CURLOPT_USERAGENT, $ua[array_rand($ua)]);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
@@ -86,7 +76,6 @@ class Bukovel {
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$cont = curl_exec($ch);
 		if(preg_match_all('/data-cam-temp="([\-0-9\,]+)"/imsU', $cont, $out, PREG_PATTERN_ORDER)){
-			#print_r($out); flush();
 			$data['temp'] = array();
 			foreach ($out[1] as $item){
 				$data['temp'][] = floatval(preg_replace('/,/','.',$item));
@@ -96,7 +85,6 @@ class Bukovel {
 			$t1 = $data['temp'][count($data['temp'])-1];
 			$data['temp'] = ($t0 != $t1) ? $t0.' .. '.$t1 : $t0;
 			$data['temp_upd'] = date("H:i d/m");
-			#print_r($data); flush();
 		}
 
 		# get lift status
@@ -134,6 +122,7 @@ class Bukovel {
 		}
 
 		curl_close($ch);
+
 		if(count($data)){
 			$stname = $this->dir.'status.dat';
 			echo file_put_contents($stname,serialize($data)) ? $stname." => OK " : print_r(error_get_last());
@@ -171,8 +160,8 @@ class Bukovel {
 			list(,,$w,) = imagettfbbox($size,0,$font,$text);
 			$x = imagesx($im)-$w+$x;
 		}
-	#	imagettftext($im, $size, 0, $x+1, $y+1, $cb, $font, $text);
-	#	file_put_contents('1.txt',implode("|",imagettfbbox($size,0,$font,$text))."\n".file_get_contents('1.txt'));
+#		imagettftext($im, $size, 0, $x+1, $y+1, $cb, $font, $text);
+#		file_put_contents('1.txt',implode("|",imagettfbbox($size,0,$font,$text))."\n".file_get_contents('1.txt'));
 		imagettftext($im, $size, 0, $x, $y,$color, $font, $text);
 	}
 
@@ -198,10 +187,6 @@ class Bukovel {
 
 		imagepng($im);
 		imagedestroy($im);
-	}
-
-	function get_lift_status(){
-		return $this->status = unserialize(file_get_contents($this->dir.'status.dat'));
 	}
 
 	function db_connect(){
@@ -248,6 +233,14 @@ class Bukovel {
 		file_put_contents(__FILE__,$cont) or print_r(error_get_last());
 	}
 
+	function get_cam_path($k){
+		return 's/'.$k.'.jpg';
+	}
+
+	function get_lift_status(){
+		return $this->status = unserialize(file_get_contents($this->dir.'status.dat'));
+	}
+
 	function draw_cam_list(){
 		$cam_list = '';
 		foreach($this->cams as $k=>$v){
@@ -261,7 +254,6 @@ class Bukovel {
 #					($this->status['lift_change'][ $v['origin'] ] ? '<span>'.$this->status['lift_change'][ $v['origin'] ].'</span>' : '').
 			'</div>';
 		}
-
 		return $cam_list;
 	}
 
@@ -280,7 +272,6 @@ class Bukovel {
 		// <meta name="apple-mobile-web-app-capable" content="yes">
 		// <meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">
 		header("Content-type: text/html; charset=UTF-8");
-
 ?>
 <html>
 <head>
@@ -291,63 +282,13 @@ class Bukovel {
 <meta name="apple-mobile-web-app-title" content="Черги Bukovel">
 <meta property="og:title" content="Контроль черг на витягах Г/К Буковель">
 <meta property="og:image" content="<?='/'.$this->get_cam_path('02')?>">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<style>
-	body { padding:0; margin:0; background-color:#f7f7f7; color:#b2b2b2; font-family:"Fira Sans", "Source Sans Pro", Helvetica, Arial, sans-serif; }
-	main { margin:0; padding:10px; gap:10px; display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)) }
-	main div { display:block; overflow:hidden; position:relative; padding:0; margin:0; border-radius:20px }
-	main div a img { border-radius:20px; width:100%; transform: scale(1.1,1.1); opacity:0.9; vertical-align:0px; cursor:pointer; transition:transform 0.2s,opacity 0.2s }
-	main div a:hover img { border-radius:20px; transform: scale(1.4,1.4); opacity:1 }
-	main div i { position: absolute; bottom: 0; right: 0.2em; font-style: normal; font-size: 6em }
-	main div.open i { color:#fff; -webkit-text-stroke:1px black; }
-	main div.closed i { color:#ce1632; -webkit-text-stroke:1px white }
-	header { display:flex; justify-content:space-between; border-radius:20px; background-color:#293146; height:2em; font-size:2em; font-weight:300; line-height:2em; margin:10px 10px 0 10px }
-	header img { height:2em; border-top-left-radius:20px; border-bottom-left-radius:20px; }
-	header span { white-space: nowrap; margin-right:15px }
-	header h1 { margin:0 15px; font-size:0.92em; font-weight:lighter; text-align:left; flex-grow:10; /* white-space: nowrap; text-overflow:ellipsis; overflow:hidden */}
-	header h1 u { text-decoration:none; color:#fff }
-	footer { height:3em; font-size:0.8em; line-height:3em; text-align:right; margin:0 10px 10px 10px }
-	@media only screen and (min-device-width: 320px) and (max-device-width: 568px) and (orientation: portrait) {
-		i, .fancybox-title-over { font-size:4em }
-		header { height:4em; font-size:2.7em; line-height:1em }
-		header img, header span { height:4em }
-		header span { font-size:2em;line-height:2em }
-		header h1 {align-self:center; line-height:1.7em }
-	}
-	@media (max-width: 900px) {
-		header h1 { font-size:0.8em; text-overflow:ellipsis; overflow:hidden }
-	}
-	@media (max-width: 800px) {
-		header h1 { font-size:0.6em }
-	}
-	@media (max-width: 660px) {
-		header h1 { font-size:0.6em; padding:0.5em 0; line-height:1.3em }
-	}
-	@media (max-width: 460px) {
-		header h1 { font-size:0.5em; padding:0.8em 0 }
-	}
-</style>
 <script type="text/javascript" src="/s/jquery.min.js"></script>
 <script type="text/javascript" src="/s/jquery.fancybox.min.js"></script>
+<script type="text/javascript" src="/s/script.js"></script>
 <link type="text/css" rel="stylesheet" href="/s/jquery.fancybox.css">
+<link type="text/css" rel="stylesheet" href="/s/style.css">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
-<script type="text/javascript">
-var img_list = new Array();
-var idx_list = 0;
-var trefresh = 5;
-function refreshImg(){
-	var obj = img_list[idx_list];
-	obj.href = $(obj).attr('data')+'?'+parseInt(Math.random()*100000);
-	$(obj).find('img').attr('src',obj.href);
-	if(++idx_list >= img_list.length) idx_list = 0;
-	setTimeout("refreshImg()",1000*trefresh);
-}
-$(document).ready(function() {
-	$('a.fancy').each(function(){img_list.push(this)});
-	setTimeout("refreshImg();",1000*trefresh);
-	$("a.fancy").fancybox({ buttons: [], clickContent: "close", mobile: { dblclickContent: "close" } });
-});
-</script>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body>
 <header>
@@ -356,7 +297,10 @@ $(document).ready(function() {
 	<span title="Оновлено: <?=$this->status['temp_upd']?>"><?=$this->status['temp']?>&deg;C</span>
 </header>
 <main><?=$this->draw_cam_list()?></main>
-<footer title="Today: <?=intval($stat['hits'])?> / <?=intval($stat['hosts'])?>">Copyright &copy LV-Soft, 2015-<?=date('Y')?></footer>
+<footer>
+	Copyright &copy; <a href="https://github.com/lataniuk/bukovel" target="_blank">LV-Soft</a>,
+	<span title="Today: <?=intval($stat['hits'])?> / <?=intval($stat['hosts'])?>">2015-<?=date('Y')?></span>
+</footer>
 </body>
 </html>
 <?php
