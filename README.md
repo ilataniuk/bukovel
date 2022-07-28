@@ -9,7 +9,7 @@ A convenient way of queues control at the ski resort Bukovel
 DirectoryIndex start.php
 ```
 ```
-RewriteEngine On  # for dynamic generation apple-touch-icon.png
+RewriteEngine On  # for dynamic generating apple-touch-icon.png
 ```
 
 #### Command line usage
