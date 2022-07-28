@@ -1,4 +1,4 @@
-name: Deploy 2 Svai
+name: Deploy2hosting
 
 on:
   push:

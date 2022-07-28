@@ -10,7 +10,6 @@ RewriteRule apple-touch-icon(-precomposed)?.png  start.php?mode=touch [QSA,L]
 #RewriteCond %{REQUEST_FILENAME} !-s
 #RewriteCond %{REQUEST_FILENAME} !-l
 
-<Files *.dat>
+<Files ~ "\.(?:dat|json|md)$">
     deny from all
 </Files>
-
