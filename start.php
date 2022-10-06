@@ -77,14 +77,19 @@ class Bukovel {
 		$cont = curl_exec($ch);
 		if(preg_match_all('/data-cam-temp="([\-0-9\,]+)"/imsU', $cont, $out, PREG_PATTERN_ORDER)){
 			$data['temp'] = array();
+			$t0 = $t1 = '';
 			foreach ($out[1] as $item){
-				$data['temp'][] = floatval(preg_replace('/,/','.',$item));
+				$t = floatval(preg_replace('/,/','.',$item));
+				if(($t > -40) && ($t<40)) $data['temp'][] = $t;
 			}
-			sort($data['temp']);
-			$t0 = $data['temp'][0];
-			$t1 = $data['temp'][count($data['temp'])-1];
-			$data['temp'] = ($t0 != $t1) ? $t0.' .. '.$t1 : $t0;
+			if(count($data['temp'])){
+				sort($data['temp']);
+				$t0 = $data['temp'][0];
+				$t1 = $data['temp'][count($data['temp'])-1];
+			}
 			$data['temp_upd'] = date("H:i d/m");
+			$data['temp'] = ($t0 != $t1) && "$t0" && "$t1" ? $t0.' .. '.$t1 : $t0;
+			if(!$data['temp']) $data['temp'] = '-.-';
 		}
 
 		# get lift status
