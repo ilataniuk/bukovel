@@ -303,7 +303,7 @@ class Bukovel {
 </header>
 <main><?=$this->draw_cam_list()?></main>
 <footer>
-	Copyright &copy; <a href="https://github.com/lataniuk/bukovel" target="_blank">LV-Soft</a>,
+	By <a href="https://github.com/lataniuk/bukovel" target="_blank">LV-Soft</a>,
 	<span title="Today: <?=intval($stat['hits'])?> / <?=intval($stat['hosts'])?>">2015-<?=date('Y')?></span>
 </footer>
 </body>

@@ -8,7 +8,7 @@ main div i { position: absolute; bottom: 0; right: 0.2em; font-style: normal; fo
 main div.open i { color:#fff; -webkit-text-stroke:1px black; }
 main div.closed i { color:#ce1632; -webkit-text-stroke:1px white }
 header { display:flex; justify-content:space-between; border-radius:20px; background-color:#293146; height:2em; font-size:2em; font-weight:300; line-height:2em; margin:10px 10px 0 10px }
-header img { height:2em; border-top-left-radius:20px; border-bottom-left-radius:20px; }
+header img { height:2em; min-width:2em; border-top-left-radius:20px; border-bottom-left-radius:20px }
 header span { white-space: nowrap; margin-right:15px }
 header h1 { margin:0 15px; font-size:0.92em; font-weight:lighter; text-align:left; flex-grow:10; /* white-space: nowrap; text-overflow:ellipsis; overflow:hidden */}
 header h1 u { text-decoration:none; color:#fff }
@@ -19,6 +19,7 @@ footer { height:3em; font-size:0.8em; line-height:3em; text-align:right; margin:
 	header img, header span { height:4em }
 	header span { font-size:2em;line-height:2em }
 	header h1 {align-self:center; line-height:1.7em }
+	footer { margin-right: 6em!important }
 }
 @media (max-width: 900px) {
 	header h1 { font-size:0.8em; text-overflow:ellipsis; overflow:hidden }
