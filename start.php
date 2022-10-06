@@ -291,7 +291,7 @@ class Bukovel {
 <script type="text/javascript" src="/s/jquery.fancybox.min.js"></script>
 <script type="text/javascript" src="/s/script.js"></script>
 <link type="text/css" rel="stylesheet" href="/s/jquery.fancybox.css">
-<link type="text/css" rel="stylesheet" href="/s/style.css">
+<link type="text/css" rel="stylesheet" href="/s/style.css?withdark">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>

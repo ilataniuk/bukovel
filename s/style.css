@@ -19,7 +19,10 @@ footer { height:3em; font-size:0.8em; line-height:3em; text-align:right; margin:
 	header img, header span { height:4em }
 	header span { font-size:2em;line-height:2em }
 	header h1 {align-self:center; line-height:1.7em }
-	footer { margin-right: 6em!important }
+	footer { margin-right: 8em!important }
+}
+@media (prefers-color-scheme: dark) {
+	body { color:#f7f7f7; background-color:#000; }
 }
 @media (max-width: 900px) {
 	header h1 { font-size:0.8em; text-overflow:ellipsis; overflow:hidden }
