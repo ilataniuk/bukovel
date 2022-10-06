@@ -21,9 +21,6 @@ footer { height:3em; font-size:0.8em; line-height:3em; text-align:right; margin:
 	header h1 {align-self:center; line-height:1.7em }
 	footer { margin-right: 8em!important }
 }
-@media (prefers-color-scheme: dark) {
-	body { color:#f7f7f7; background-color:#000; }
-}
 @media (max-width: 900px) {
 	header h1 { font-size:0.8em; text-overflow:ellipsis; overflow:hidden }
 }
@@ -35,5 +32,8 @@ footer { height:3em; font-size:0.8em; line-height:3em; text-align:right; margin:
 }
 @media (max-width: 460px) {
 	header h1 { font-size:0.5em; padding:0.8em 0 }
+}
+@media (prefers-color-scheme: dark) {
+	body { color:#f7f7f7; background-color:#000; }
 }
 .fancybox-image { border-radius:20px }
