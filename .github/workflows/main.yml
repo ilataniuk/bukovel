@@ -18,7 +18,7 @@ jobs:
         run : php start.php deploy ${{ secrets.BUKOVEL_DB_USER }} ${{ secrets.BUKOVEL_DB_PASS }}
 
       - name: 📂 Sync files
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: bukovel.lv.com.ua
           username: ${{ secrets.BUKOVEL_FTP_USER }}
