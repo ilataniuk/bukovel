@@ -21,7 +21,6 @@ php start.php  # crontab task every 5 minutes for updating images from cameras
 php start.php init # mysql table creation for host/hits statistics 
 ```
 
-
 ![example workflow](https://github.com/lataniuk/bukovel/actions/workflows/main.yml/badge.svg)
 
 
