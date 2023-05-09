@@ -1,5 +1,5 @@
 .DS_Store
-g*.html
+go*.html
 .svn/*
 status.dat
 s/*.jpg
