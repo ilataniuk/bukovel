@@ -7,7 +7,7 @@ define('DB_PASS', '');
 
 class Bukovel {
 
-	protected $db, $dir, $cams = array(
+	protected $db, $dir, $file, $cams = array(
 		#'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/delays/lift1r.jpg'),
 		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/cams_th/23_full.jpg'),
 		'02' => array('origin'=>'2R','url'=>'https://bukovel.com/media/delays/lift2r.jpg'),
@@ -31,7 +31,8 @@ class Bukovel {
 
 	function __construct(){
 		setlocale(LC_TIME, 'uk_UA');
-		$this->dir = dirname(__FILE__).'/';
+		$this->dir  = dirname(__FILE__).'/';
+		$this->file = 'status.json';
 		# running form command line
 		global $argv;
 		if(!isset($_SERVER['SERVER_NAME'])){
@@ -111,7 +112,6 @@ class Bukovel {
 
 		if(is_array($out['data']['lifts'])){
 			#print_r($out['data']['lifts']);
-			$data['lift'] = $data['lift_change'] = array();
 	 		foreach ($out['data']['lifts'] as $item){
 	 			$data['lift'][ $item['title'] ] = $item['status'] == 'OPEN' ? 'open' : 'closed';
 	 			if($item['startDate'] || $item['stopDate']){
@@ -143,8 +143,10 @@ class Bukovel {
 		curl_close($ch);
 
 		if(count($data)){
-			$stname = $this->dir.'status.dat';
-			echo file_put_contents($stname,serialize($data)) ? $stname." => OK" : print_r(error_get_last());
+			$stname = $this->dir.$this->file;
+			echo file_put_contents($stname, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
+				? $stname." => OK"
+				: print_r(error_get_last());
 			chmod($stname,0644);
 		}
 		echo "\n";
@@ -257,17 +259,31 @@ class Bukovel {
 		return 's/'.$k.'.jpg';
 	}
 
+	function get_cam_status($cam_num) {
+		return array_key_exists($cam_num, $this->status['lift'])
+			? ' '.$this->status['lift'][$cam_num]
+			: '';
+	}
+
 	function get_lift_status(){
-		return $this->status = unserialize(file_get_contents($this->dir.'status.dat'));
+		$path = $this->dir.$this->file;
+		$cont = file_exists($path) ? file_get_contents($path) : '{}';
+		$data = json_decode($cont,1);
+		if(!array_key_exists('lift', $data)){
+			$data['lift'] = $data['lift_change'] = array();
+			$data['lift_upd'] = $data['temp_upd'] = $data['temp'] = '';
+		}
+		return $this->status = $data;
 	}
 
 	function draw_cam_list(){
+		#print_r($this->status);
 		$cam_list = '';
 		foreach($this->cams as $k=>$v){
 			$rnd = rand(10000,99999);
 			$url = $this->get_cam_path($k);
 			$url = file_exists($this->dir.$url) ? '/'.$url : '/s/empty.gif';
-			$cam_list .= '<div class="cam '.$this->status['lift'][ $v['origin'] ].'">
+			$cam_list .= '<div class="cam'.$this->get_cam_status($v['origin']).'">
 				<a class="fancy" data-fancybox="gallery" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
 					<img title="Черга на нижній станції витягу №'.intval($k).'" alt="Черга на нижній станції витягу №'.$v['origin'].'" src="'.$url.'?'.$rnd.'">
 					</a><i>'.intval($k).'</i>'.
