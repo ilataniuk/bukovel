@@ -8,7 +8,8 @@ define('DB_PASS', '');
 class Bukovel {
 
 	protected $db, $dir, $cams = array(
-		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/delays/lift1r.jpg'),
+		#'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/delays/lift1r.jpg'),
+		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/cams_th/23_full.jpg'),
 		'02' => array('origin'=>'2R','url'=>'https://bukovel.com/media/delays/lift2r.jpg'),
 #		'2R'=> array('origin'=>'2','url'=>'https://bukovel.com/media/delays/lift2.jpg'),
 		'05' => array('origin'=>'5', 'url'=>'https://bukovel.com/media/delays/lift5.jpg' ),
@@ -20,13 +21,16 @@ class Bukovel {
 		'12'=> array('origin'=>'12','url'=>'https://bukovel.com/media/delays/lift12.jpg'),
 		'13'=> array('origin'=>'13','url'=>'https://bukovel.com/media/delays/lift13.jpg'),
 		'14'=> array('origin'=>'14','url'=>'https://bukovel.com/media/delays/lift14.jpg'),
-		'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/delays/lift15.jpg'),
+		#'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/delays/lift15.jpg'),
+		'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/cams_th/17_full.jpg'),
 		'16'=> array('origin'=>'16','url'=>'https://bukovel.com/media/delays/lift16.jpg'),
-		'17'=> array('origin'=>'17','url'=>'https://bukovel.com/media/delays/lift17.jpg'),
+		#'17'=> array('origin'=>'17','url'=>'https://bukovel.com/media/delays/lift17.jpg'),
+		'17'=> array('origin'=>'16','url'=>'https://bukovel.com/media/cams_th/19_full.jpg'),
 		'22'=> array('origin'=>'22','url'=>'https://bukovel.com/media/delays/lift22.jpg'),
 	);
 
 	function __construct(){
+		setlocale(LC_TIME, 'uk_UA');
 		$this->dir = dirname(__FILE__).'/';
 		# running form command line
 		global $argv;
@@ -53,7 +57,7 @@ class Bukovel {
 			'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 YaBrowser/17.10.0.2017 Yowser/2.5 Safari/537.36',
 			'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063',
 			'Mozilla/5.0 (Windows NT 6.2; WOW64)',
-			'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0_3 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A432 Safari/604.1',
+			'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A432 Safari/604.1',
 			'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.8) Gecko/2009032609 Firefox/3.0.8',
 			'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36',
 			'Opera/9.61 (Windows NT 5.1; U; ru)',
@@ -72,14 +76,18 @@ class Bukovel {
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 
 		# get temp
-		$url = 'https://bukovel.com/cams/';
+		echo $url = 'https://bukovel.com/api/v2/web-cams?offset=0&per_page=1000'; flush();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$cont = curl_exec($ch);
-		if(preg_match_all('/data-cam-temp="([\-0-9\,]+)"/imsU', $cont, $out, PREG_PATTERN_ORDER)){
+		$code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
+		echo ' ... '.$code."\n"; flush();
+		$out = json_decode($cont, 1);
+
+		if(is_array($out['data'])){
 			$data['temp'] = array();
 			$t0 = $t1 = '';
-			foreach ($out[1] as $item){
-				$t = floatval(preg_replace('/,/','.',$item));
+			foreach ($out['data'] as $item){
+				$t = floatval($item['meteo']['temp']);
 				if(($t > -40) && ($t<40)) $data['temp'][] = $t;
 			}
 			if(count($data['temp'])){
@@ -87,30 +95,35 @@ class Bukovel {
 				$t0 = $data['temp'][0];
 				$t1 = $data['temp'][count($data['temp'])-1];
 			}
-			$data['temp_upd'] = date("H:i d/m");
-			$data['temp'] = ($t0 != $t1) && "$t0" && "$t1" ? $t0.' .. '.$t1 : $t0;
+			#$data['temp_upd'] = date("H:i d/m");
+			$data['temp_upd'] = strftime("%e %B %H:%M");
+			$data['temp'] = "$t0" && "$t1" && abs($t1-$t0)>2 ? $t0.' .. '.$t1 : $t0;
 			if(!$data['temp']) $data['temp'] = '-.-';
 		}
 
 		# get lift status
-		echo $url = 'https://bukovel.com/ski/status'; flush();
+		echo $url = 'https://bukovel.com/api/v2/status-lifts-trails'; flush();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$cont = curl_exec($ch);
 		$code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
 		echo ' ... '.$code."\n"; flush();
+		$out = json_decode($cont, 1);
 
-		if(preg_match_all('%<div\s+class="track-status-icon info-hover\s+status-([^\s]+)(?:\s[^"]+)?">\s*([0-9R]+)\s*<i>\s*([0-9/]*)\s*</i>%imsU', $cont, $out, PREG_SET_ORDER)){
-			#print_r($out);
-			$data['lift'] = array();
-	 		foreach ($out as $item){
-	 			$data['lift'][ $item[2] ] = ($item[1] == 'inactive') ? 'closed' : 'open';
-	 			if($item[3]) $data['lift_change'][ $item[2] ] = $item[3];
+		if(is_array($out['data']['lifts'])){
+			#print_r($out['data']['lifts']);
+			$data['lift'] = $data['lift_change'] = array();
+	 		foreach ($out['data']['lifts'] as $item){
+	 			$data['lift'][ $item['title'] ] = $item['status'] == 'OPEN' ? 'open' : 'closed';
+	 			if($item['startDate'] || $item['stopDate']){
+					$data['lift_change'][ $item['title'] ] = $item['startDate'] ? $item['startDate'] : $item['stopDate'];
+				}
 	 		}
 		}
+		print_r($data);
 
 		# get webcam images
 		foreach($this->cams as $k=>$v){
-			$uri = '?='.date("His").sprintf("%03d",rand(0,999));
+			$uri = '?v='.date("dmyHi").sprintf("%02d",rand(0,99));
 			echo $v['url'].$uri; flush();
 			curl_setopt($ch, CURLOPT_URL, $v['url'].$uri);
 			$cont = curl_exec($ch);
@@ -122,7 +135,8 @@ class Bukovel {
 				file_put_contents($fname,$cont) or print_r(error_get_last());
 				$this->make_thumb($fname);
 				chmod($fname,0644);
-				$data['lift_upd'] = date("H:i d/m");
+				#$data['lift_upd'] = date("H:i d/m");
+				$data['lift_upd'] = strftime("%e %B %H:%M");
 			}
 		}
 
@@ -130,9 +144,10 @@ class Bukovel {
 
 		if(count($data)){
 			$stname = $this->dir.'status.dat';
-			echo file_put_contents($stname,serialize($data)) ? $stname." => OK " : print_r(error_get_last());
+			echo file_put_contents($stname,serialize($data)) ? $stname." => OK" : print_r(error_get_last());
 			chmod($stname,0644);
 		}
+		echo "\n";
 	}
 
 	function make_thumb($src, $dest='', $width=1000, $height=600){
@@ -291,7 +306,7 @@ class Bukovel {
 <script type="text/javascript" src="/s/jquery.fancybox.min.js"></script>
 <script type="text/javascript" src="/s/script.js"></script>
 <link type="text/css" rel="stylesheet" href="/s/jquery.fancybox.css">
-<link type="text/css" rel="stylesheet" href="/s/style.css">
+<link type="text/css" rel="stylesheet" href="/s/style.css?v2">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
