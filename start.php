@@ -100,7 +100,7 @@ class Bukovel {
 			$data['temp_upd'] = date("H:i d/m");
 			#$data['temp_upd'] = strftime("%e %B %H:%M");
 			$data['temp'] = "$t0" && "$t1" && abs($t1-$t0)>2 ? $t0.' .. '.$t1 : $t0;
-			if(!$data['temp']) $data['temp'] = '-.-';
+			if(!strlen($data['temp'])) $data['temp'] = '-.-';
 		}
 
 		# get lift status
