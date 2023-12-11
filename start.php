@@ -331,9 +331,9 @@ class Bukovel {
 <meta property="og:title" content="Контроль черг на витягах Г/К Буковель">
 <meta property="og:image" content="<?='/'.$this->get_cam_path('02')?>">
 <script type="text/javascript" src="/s/fancybox.umd.js"></script>
-<script type="text/javascript" src="/s/script.js"></script>
+<script type="text/javascript" src="/s/script.js?v=3"></script>
 <link type="text/css" rel="stylesheet" href="/s/fancybox.css">
-<link type="text/css" rel="stylesheet" href="/s/style.css?v2.1">
+<link type="text/css" rel="stylesheet" href="/s/style.css?v=3">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
