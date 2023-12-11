@@ -8,29 +8,30 @@ define('DB_PASS', '');
 class Bukovel {
 
 	protected $db, $dir, $file, $cams = array(
-		#'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/delays/lift1r.jpg'),
-		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/cams_th/23_full.jpg'),
+		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/delays/lift1r.jpg'),
+#		'01' => array('origin'=>'1','url'=>'https://bukovel.com/media/cams_th/23_full.jpg'),
 		'02' => array('origin'=>'2R','url'=>'https://bukovel.com/media/delays/lift2r.jpg'),
 #		'2R'=> array('origin'=>'2','url'=>'https://bukovel.com/media/delays/lift2.jpg'),
 		'05' => array('origin'=>'5', 'url'=>'https://bukovel.com/media/delays/lift5.jpg' ),
 #		'06' => array('origin'=>'6', 'url'=>'https://bukovel.com/media/delays/lift6.jpg' ),
 		'07' => array('origin'=>'7', 'url'=>'https://bukovel.com/media/delays/lift7.jpg' ),
+#		'7R' => array('origin'=>'7R','url'=>'https://bukovel.com/media/delays/lift7r.jpg' ),
 		'08' => array('origin'=>'8', 'url'=>'https://bukovel.com/media/delays/lift8.jpg' ),
 		'09' => array('origin'=>'9', 'url'=>'https://bukovel.com/media/delays/lift3.jpg' ),
 		'11'=> array('origin'=>'11','url'=>'https://bukovel.com/media/delays/lift11.jpg'),
 		'12'=> array('origin'=>'12','url'=>'https://bukovel.com/media/delays/lift12.jpg'),
 		'13'=> array('origin'=>'13','url'=>'https://bukovel.com/media/delays/lift13.jpg'),
 		'14'=> array('origin'=>'14','url'=>'https://bukovel.com/media/delays/lift14.jpg'),
-		#'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/delays/lift15.jpg'),
-		'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/cams_th/17_full.jpg'),
+		'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/delays/lift15.jpg'),
+#		'15'=> array('origin'=>'15','url'=>'https://bukovel.com/media/cams_th/17_full.jpg'),
 		'16'=> array('origin'=>'16','url'=>'https://bukovel.com/media/delays/lift16.jpg'),
-		#'17'=> array('origin'=>'17','url'=>'https://bukovel.com/media/delays/lift17.jpg'),
-		'17'=> array('origin'=>'16','url'=>'https://bukovel.com/media/cams_th/19_full.jpg'),
+		'17'=> array('origin'=>'17','url'=>'https://bukovel.com/media/delays/lift17.jpg'),
+#		'17'=> array('origin'=>'16','url'=>'https://bukovel.com/media/cams_th/19_full.jpg'),
 		'22'=> array('origin'=>'22','url'=>'https://bukovel.com/media/delays/lift22.jpg'),
 	);
 
 	function __construct(){
-		setlocale(LC_TIME, 'uk_UA');
+		#setlocale(LC_TIME, 'uk_UA');
 		$this->dir  = dirname(__FILE__).'/';
 		$this->file = 'status.json';
 		# running form command line
@@ -81,7 +82,7 @@ class Bukovel {
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$cont = curl_exec($ch);
 		$code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		echo ' ... '.$code."\n"; flush();
+		echo $this->print_code($url, $code)."\n";
 		$out = json_decode($cont, 1);
 
 		if(is_array($out['data'])){
@@ -96,8 +97,8 @@ class Bukovel {
 				$t0 = $data['temp'][0];
 				$t1 = $data['temp'][count($data['temp'])-1];
 			}
-			#$data['temp_upd'] = date("H:i d/m");
-			$data['temp_upd'] = strftime("%e %B %H:%M");
+			$data['temp_upd'] = date("H:i d/m");
+			#$data['temp_upd'] = strftime("%e %B %H:%M");
 			$data['temp'] = "$t0" && "$t1" && abs($t1-$t0)>2 ? $t0.' .. '.$t1 : $t0;
 			if(!$data['temp']) $data['temp'] = '-.-';
 		}
@@ -107,7 +108,7 @@ class Bukovel {
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$cont = curl_exec($ch);
 		$code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-		echo ' ... '.$code."\n"; flush();
+		echo $this->print_code($url, $code)."\n";
 		$out = json_decode($cont, 1);
 
 		if(is_array($out['data']['lifts'])){
@@ -115,11 +116,13 @@ class Bukovel {
 	 		foreach ($out['data']['lifts'] as $item){
 	 			$data['lift'][ $item['title'] ] = $item['status'] == 'OPEN' ? 'open' : 'closed';
 	 			if($item['startDate'] || $item['stopDate']){
-					$data['lift_change'][ $item['title'] ] = $item['startDate'] ? $item['startDate'] : $item['stopDate'];
+					$tmp = $item['startDate'] ? $item['startDate'] : $item['stopDate'];
+					$tmp = explode('-',$tmp);
+					$data['lift_change'][ $item['title'] ] = $tmp[2].'/'.$tmp[1];
 				}
 	 		}
 		}
-		print_r($data);
+		#print_r($data);
 
 		# get webcam images
 		foreach($this->cams as $k=>$v){
@@ -128,15 +131,15 @@ class Bukovel {
 			curl_setopt($ch, CURLOPT_URL, $v['url'].$uri);
 			$cont = curl_exec($ch);
 			$code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-			echo ' ... '.$code."\n"; flush();
-			if($code==200){
+			echo $this->print_code($v['url'].$uri, $code);
+			if($code == 200){
 				$fname = $this->dir.$this->get_cam_path($k);
 				@unlink($fname);
 				file_put_contents($fname,$cont) or print_r(error_get_last());
 				$this->make_thumb($fname);
 				chmod($fname,0644);
-				#$data['lift_upd'] = date("H:i d/m");
-				$data['lift_upd'] = strftime("%e %B %H:%M");
+				$data['lift_upd'] = date("H:i d/m");
+				#$data['lift_upd'] = strftime("%e %B %H:%M");
 			}
 		}
 
@@ -144,12 +147,17 @@ class Bukovel {
 
 		if(count($data)){
 			$stname = $this->dir.$this->file;
-			echo file_put_contents($stname, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE))
-				? $stname." => OK"
+			echo file_put_contents($stname, json_encode($data, JSON_PRETTY_PRINT + JSON_UNESCAPED_UNICODE))
+				? $stname.$this->print_code($stname)
 				: print_r(error_get_last());
-			chmod($stname,0644);
+			chmod($stname, 0644);
 		}
 		echo "\n";
+	}
+
+	function print_code($str, $code='OK', $symbol='.', $limit=100){
+		flush();
+		return ' '.str_pad(' [ '.$code.' ]', $limit - strlen($str), $symbol, STR_PAD_LEFT)."\n";
 	}
 
 	function make_thumb($src, $dest='', $width=1000, $height=600){
@@ -172,7 +180,7 @@ class Bukovel {
 			$res = $ifunc($idest, $dest);
 		}
 		imagedestroy($idest);
-		echo $dest.' => '.($res ? 'OK' : 'Fail')."\n\n";
+		echo $dest.$this->print_code($dest, $res ? 'OK' : 'ERR', ' ')."\n";
 		return $res;
 	}
 
@@ -242,7 +250,7 @@ class Bukovel {
 				`date` DATE NOT NULL,
 				`ip` INT UNSIGNED NOT NULL DEFAULT '0',
 				`cnt` INT UNSIGNED NOT NULL DEFAULT '1',
-				 `referer` VARCHAR(300) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL
+				`referer` VARCHAR(300) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL
 			) ENGINE=MyISAM;
 		");
 		$this->db_close();
@@ -282,12 +290,16 @@ class Bukovel {
 		foreach($this->cams as $k=>$v){
 			$rnd = rand(10000,99999);
 			$url = $this->get_cam_path($k);
-			$url = file_exists($this->dir.$url) ? '/'.$url : '/s/empty.gif';
-			$cam_list .= '<div class="cam'.$this->get_cam_status($v['origin']).'">
+			$url = '/'.(file_exists($this->dir.$url) ? $url : 's/empty.gif');
+			$status = $this->get_cam_status($v['origin']);
+			$cam_list .= '<div class="cam'.$status.'">
 				<a class="fancy" data-fancybox="gallery" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
 					<img title="Черга на нижній станції витягу №'.intval($k).'" alt="Черга на нижній станції витягу №'.$v['origin'].'" src="'.$url.'?'.$rnd.'">
 					</a><i>'.intval($k).'</i>'.
-#					($this->status['lift_change'][ $v['origin'] ] ? '<span>'.$this->status['lift_change'][ $v['origin'] ].'</span>' : '').
+					(isset($this->status['lift_change'][ $v['origin'] ]) && ($status != ' open')
+						? '<u>'.$this->status['lift_change'][ $v['origin'] ].'</u>'
+						: ''
+					).
 			'</div>';
 		}
 		return $cam_list;
@@ -322,7 +334,7 @@ class Bukovel {
 <script type="text/javascript" src="/s/jquery.fancybox.min.js"></script>
 <script type="text/javascript" src="/s/script.js"></script>
 <link type="text/css" rel="stylesheet" href="/s/jquery.fancybox.css">
-<link type="text/css" rel="stylesheet" href="/s/style.css?v2">
+<link type="text/css" rel="stylesheet" href="/s/style.css?v2.1">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
@@ -340,9 +352,7 @@ class Bukovel {
 </body>
 </html>
 <?php
- 	}
-
-
+	}
 }
 
 new Bukovel();

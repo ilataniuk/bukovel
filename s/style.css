@@ -4,9 +4,11 @@ main { margin:0; padding:10px; gap:10px; display:grid; grid-template-columns:rep
 main div { display:block; overflow:hidden; position:relative; padding:0; margin:0; border-radius:20px }
 main div a img { border-radius:20px; width:100%; transform: scale(1.1,1.1); vertical-align:0px; cursor:pointer; transition:transform 0.2s; }
 main div a:hover img { border-radius:20px; transform: scale(1.4,1.4) }
-main div i { position:absolute; bottom:0; right:0; padding:0.7em 0.2em 0 2em; font-style:normal; font-size:6em; pointer-events:none; user-select:none; background:rgb(0,0,0); background:linear-gradient(155deg, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 100%); }
-main div.open i { color:#fff; -webkit-text-stroke:1px black; }
-main div.closed i { color:#ce1632; -webkit-text-stroke:1px white }
+main div i { padding:0.7em 0.2em 0 2em; font-style:normal; font-size:6em; background:rgb(0,0,0); background:linear-gradient(150deg, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 100%); }
+main div u { margin:0 1.2em 4em 0; text-decoration:none; font-size:1.5em; font-weight:bold }
+main div u, main div i { position:absolute; bottom:0; right:0; pointer-events:none; user-select:none } 
+main div.open i, main div.open u { color:#fff; -webkit-text-stroke:1px black; }
+main div.closed i, main div.closed u  { color:#ce1632; -webkit-text-stroke:1px white }
 header { display:flex; justify-content:space-between; border-radius:20px; background-color:#293146; height:2em; font-size:2em; font-weight:300; line-height:2em; margin:10px 10px 0 10px }
 header img { height:2em; min-width:2em; border-top-left-radius:20px; border-bottom-left-radius:20px }
 header span { white-space: nowrap; margin-right:15px }
