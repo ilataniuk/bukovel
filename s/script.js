@@ -10,8 +10,25 @@ function refreshImg(){
 	setTimeout("refreshImg()",1000*trefresh);
 }
 
-$(document).ready(function() {
-	$('a.fancy').each(function(){img_list.push(this)});
-	setTimeout("refreshImg();",1000*trefresh);
-	$("a.fancy").fancybox({ buttons: [], clickContent: "close", mobile: { dblclickContent: "close" } });
+document.addEventListener("DOMContentLoaded", () => {
+	//setTimeout("refreshImg();", 1000 * trefresh);
+	Fancybox.bind("[data-fancybox]", {
+		Hash: false,
+		Thumbs: false,
+		compact: false,
+		wheel: "slide",
+		closeButton: false,
+		contentClick: "close",
+		contentDblClick: "close",
+
+		Toolbar: {
+			display: { left: [], middle: [], right: [] },
+		}	
+	});
 });
+  
+// $(document).ready(function() {
+// 	$('a.fancy').each(function(){img_list.push(this)});
+// 	setTimeout("refreshImg()",1000*trefresh);
+// 	$("a.fancy").fancybox({ buttons: [], clickContent: "close", mobile: { dblclickContent: "close" } });
+// });

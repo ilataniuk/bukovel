@@ -293,7 +293,7 @@ class Bukovel {
 			$url = '/'.(file_exists($this->dir.$url) ? $url : 's/empty.gif');
 			$status = $this->get_cam_status($v['origin']);
 			$cam_list .= '<div class="cam'.$status.'">
-				<a class="fancy" data-fancybox="gallery" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
+				<a class="fancy" data-fancybox="gallery" data-caption="Черга на нижній станції витягу №'.intval($k).'" data="'.$url.'" href="'.$url.'?'.$rnd.'" title="'.$k.'">
 					<img title="Черга на нижній станції витягу №'.intval($k).'" alt="Черга на нижній станції витягу №'.$v['origin'].'" src="'.$url.'?'.$rnd.'">
 					</a><i>'.intval($k).'</i>'.
 					(isset($this->status['lift_change'][ $v['origin'] ]) && ($status != ' open')
@@ -325,15 +325,14 @@ class Bukovel {
 <head>
 <title>Контроль черг - Буковель - Bukovel</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<!--<meta name="description" itemprop="description" content="Контроль черг на витягах Г/К Буковель в режимі OnLine">-->
+<!-- <meta name="description" itemprop="description" content="Контроль черг на витягах Г/К Буковель в режимі OnLine"> -->
 <meta name="application-name" content="Черги Bukovel">
 <meta name="apple-mobile-web-app-title" content="Черги Bukovel">
 <meta property="og:title" content="Контроль черг на витягах Г/К Буковель">
 <meta property="og:image" content="<?='/'.$this->get_cam_path('02')?>">
-<script type="text/javascript" src="/s/jquery.min.js"></script>
-<script type="text/javascript" src="/s/jquery.fancybox.min.js"></script>
+<script type="text/javascript" src="/s/fancybox.umd.js"></script>
 <script type="text/javascript" src="/s/script.js"></script>
-<link type="text/css" rel="stylesheet" href="/s/jquery.fancybox.css">
+<link type="text/css" rel="stylesheet" href="/s/fancybox.css">
 <link type="text/css" rel="stylesheet" href="/s/style.css?v2.1">
 <link rel="shortcut icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
